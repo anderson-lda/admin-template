@@ -4,7 +4,9 @@ import MenuItem from "./MenuItem";
 
 export default function MenuLateral(){
     return(
-        <aside className="flex flex-col">
+        <aside className="flex flex-col
+         dark:bg-gray-900 text-gray-700
+         bg-gray-200 ">
             <div className={`
                 flex flex-col items-center justify-center
                 bg-gradient-to-r from-indigo-500 to-purple-800
@@ -23,8 +25,9 @@ export default function MenuLateral(){
                 texto="Sair" 
                 icone={IconeSair}
                 className={`
-                    text-red-600
+                    text-red-600 dark:text-red-400
                     hover:bg-red-400 hover:text-white
+                    dark:hover:bg-white
                 `} />
             </ul>
         </aside>
