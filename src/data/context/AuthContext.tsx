@@ -7,11 +7,13 @@ import Cookies from 'js-cookie';
 interface AuthContextProps{
     usuario: Usuario
     loginGoogle: () => Promise<void> //por ser assíncrona, retorna uma promessa de void
+    logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextProps>({
     usuario: null,
-    loginGoogle: null
+    loginGoogle: null,
+    logout: null
 })
 
 async function usuarioNormalizado(usuarioFirebase:firebase.User):Promise<Usuario>{
@@ -56,21 +58,38 @@ export function AuthProvider(props){
     }
 
     async function loginGoogle(){
-        const resp = await firebase.auth().signInWithPopup(
-            new firebase.auth.GoogleAuthProvider()
-        )
-        configurarSessao(resp.user)
-        route.push('/')
+        try{
+            setCarregando(true)
+            const resp = await firebase.auth().signInWithPopup(
+                new firebase.auth.GoogleAuthProvider()
+            )
+            configurarSessao(resp.user)
+            route.push('/')
+        }finally{
+            setCarregando(false)
+        }
+    }
+
+    async function logout(){
+        try{
+            setCarregando(true)
+            await firebase.auth().signOut()
+            await configurarSessao(null)
+        }finally{
+            setCarregando(false)
+        }
     }
 
     useEffect(()=>{
-        const cancelar = firebase.auth().onIdTokenChanged(configurarSessao) //qdo um evento acontecer (id do token se modificar), configsessao sera chamado
-        return () => cancelar()
-    },[])
+            if(Cookies.get('admin-template-auth')){
+                const cancelar = firebase.auth().onIdTokenChanged(configurarSessao) //qdo um evento acontecer (id do token se modificar), configsessao sera chamado
+                return () => cancelar()    
+            }
+        },[])
 
     return(
         <AuthContext.Provider value={{
-            usuario, loginGoogle
+            usuario, loginGoogle, logout
         }}>
             {props.children}
         </AuthContext.Provider>
