@@ -6,6 +6,7 @@ import Cookies from 'js-cookie';
 
 interface AuthContextProps{
     usuario: Usuario
+    carregando?: boolean
     loginGoogle: () => Promise<void> //por ser assíncrona, retorna uma promessa de void
     logout: () => Promise<void>
 }
@@ -84,12 +85,14 @@ export function AuthProvider(props){
             if(Cookies.get('admin-template-auth')){
                 const cancelar = firebase.auth().onIdTokenChanged(configurarSessao) //qdo um evento acontecer (id do token se modificar), configsessao sera chamado
                 return () => cancelar()    
+            }else{
+                setCarregando(false)
             }
         },[])
 
     return(
         <AuthContext.Provider value={{
-            usuario, loginGoogle, logout
+            usuario, loginGoogle, logout, carregando
         }}>
             {props.children}
         </AuthContext.Provider>

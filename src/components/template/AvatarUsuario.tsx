@@ -7,6 +7,7 @@ interface AvatarUsuarioProps{
 
 export default function AvatarUsuario(props:AvatarUsuarioProps){
     const {usuario} = useAuth()
+    console.log(usuario)
 
     return(
         <Link href="/perfil">
