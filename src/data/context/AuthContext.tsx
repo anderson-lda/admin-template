@@ -7,14 +7,17 @@ import Cookies from 'js-cookie';
 interface AuthContextProps{
     usuario: Usuario
     carregando?: boolean
-    loginGoogle: () => Promise<void> //por ser assíncrona, retorna uma promessa de void
+    loginGoogle?: () => Promise<void> //por ser assíncrona, retorna uma promessa de void
+    login?: (email:string, senha:string) => Promise<void>
+    cadastrar?: (email:string, senha:string) => Promise<void>
     logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextProps>({
     usuario: null,
     loginGoogle: null,
-    logout: null
+    login: null,
+    logout: null //esse e usuario sao obrigatorios aqui
 })
 
 async function usuarioNormalizado(usuarioFirebase:firebase.User):Promise<Usuario>{
@@ -58,13 +61,37 @@ export function AuthProvider(props){
         }
     }
 
+    async function login(email, senha){
+        try{
+            setCarregando(true)
+            const resp = await firebase.auth()
+            .signInWithEmailAndPassword(email,senha)
+            await configurarSessao(resp.user)
+            route.push('/')
+        }finally{
+            setCarregando(false)
+        }
+    }
+
+    async function cadastrar(email, senha){
+        try{
+            setCarregando(true)
+            const resp = await firebase.auth()
+            .createUserWithEmailAndPassword(email,senha)
+            await configurarSessao(resp.user)
+            route.push('/')
+        }finally{
+            setCarregando(false)
+        }
+    }
+
     async function loginGoogle(){
         try{
             setCarregando(true)
             const resp = await firebase.auth().signInWithPopup(
                 new firebase.auth.GoogleAuthProvider()
             )
-            configurarSessao(resp.user)
+            await configurarSessao(resp.user)
             route.push('/')
         }finally{
             setCarregando(false)
@@ -92,7 +119,7 @@ export function AuthProvider(props){
 
     return(
         <AuthContext.Provider value={{
-            usuario, loginGoogle, logout, carregando
+            usuario, loginGoogle, login, logout, carregando, cadastrar
         }}>
             {props.children}
         </AuthContext.Provider>
